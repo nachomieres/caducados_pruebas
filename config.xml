@@ -81,4 +81,11 @@
     <plugin name="cordova-plugin-splashscreen" spec="^5.0.2" />
     <plugin name="cordova-plugin-ionic-webview" spec="^1.1.16" />
     <plugin name="cordova-plugin-ionic-keyboard" spec="^2.0.5" />
+    <engine name="android" spec="~7.0.0" />
+    <plugin name="phonegap-plugin-barcodescanner" spec="^7.1.0">
+        <variable name="ANDROID_SUPPORT_V4_VERSION" value="27.+" />
+    </plugin>
+    <allow-navigation href="http://192.168.0.13:8100" />
+    <plugin name="cordova-plugin-advanced-http" spec="^1.11.1" />
+    <plugin name="cordova-plugin-wakeuptimer-ef" spec="https://github.com/EltonFaust/cordova-plugin-wakeuptimer.git" />
 </widget>
