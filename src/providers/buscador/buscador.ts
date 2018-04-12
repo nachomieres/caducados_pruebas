@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import { Http, Headers, RequestOptions } from '@angular/http';
+import { NavController, AlertController } from 'ionic-angular';
 
 import firebase from 'firebase';
 /*
@@ -14,7 +15,10 @@ import firebase from 'firebase';
 export class BuscadorProvider {
   base =  firebase.database().ref ('caducados');
   eroski: string = 'https://www.compraonline.grupoeroski.com/es/search/results/?q=';
-  constructor(public http: Http) {
+  fecha: string = '';
+  array = [];
+
+  constructor(public http: Http, public alertCtrl: AlertController) {
     console.log('Hello BuscadorProvider Provider');
     //his.base = firebase.database().ref ('caducados');
   }
@@ -22,7 +26,7 @@ export class BuscadorProvider {
   buscaeEroski (codigo: string) {
     console.log (this.eroski + codigo);
     return this.http.get (this.eroski + codigo).map (res => {
-      let array= [];
+      //let array= [];
       //return res.text () ;
       let articulo;
       let parser = new DOMParser ();
@@ -32,32 +36,17 @@ export class BuscadorProvider {
       console.log (nombre);
       let imagen = parser.parseFromString (producto[0].innerHTML, "text/html").getElementsByTagName ('img');
       console.log (imagen[0].attributes[2].textContent);
-      array.push ({
+      this.array.push ({
         nombre: nombre[0].innerText,
         imagen: imagen[0].attributes[2].textContent
       });
-      return array;
+      return this.array;
     }); 
-    /*this.http.get(this.eroski + codigo, {}, {})
-      .then(data => {
-        console.log(data.status);
-        console.log(data.data); // data received by server
-        console.log(data.headers);
-        let parser = new DOMParser ();
-        let producto = parser.parseFromString (data.data, "text/html").getElementsByClassName ('product-description');
-        let datos = parser.parseFromString (producto[0].innerHTML, "text/html").getSelection ();
-        console.log (datos);
-      })
-      .catch(error => {
-        console.log(error.status);
-        console.log(error.error); // error message as string
-        console.log(error.headers);
-
-      });*/
     }
 
     buscaCarrefour (codigo: string) {
-      let carrefour: string = 'https://www.carrefour.es/global/?Ntt=' + codigo + '&search=Buscar'
+      let carrefour: string = 'https://www.carrefour.es/global/?Ntt=' + codigo + '&search=Buscar';
+      this.presentPrompt ();
       return this.http.get (carrefour).map (res => {
         let array= [];
         //return res.text () ;
@@ -71,14 +60,45 @@ export class BuscadorProvider {
           imagen: imagen[0].attributes['src'].textContent,
           precio: precio[0].textContent 
         });
-        
-        firebase.database ().ref ('caducados/2018/04/11').push ({
+        let fechaCaducidad = this.fecha.split ('-');
+        console.log (fechaCaducidad);
+        firebase.database ().ref ('caducados/' + this.fecha).push ({
           nombre: array[0].nombre,
           precio: array[0].precio,
           imagen: array[0].imagen
         })
         return array;
       }); 
+    }
+
+    async presentPrompt() {
+      let alert = this.alertCtrl.create({
+        title: 'Fecha Caducidad:',
+        inputs: [
+          {
+            name: 'Fecha de caducidad:',
+            placeholder: 'fecha',
+            type: 'date'
+          }
+        ],
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+            handler: data => {
+              console.log('Cancel clicked');
+            }
+          },
+          {
+            text: 'Añadir',
+            handler: data => {
+              this.fecha = data;
+              console.log (this.array);
+            }
+          }
+        ]
+      });
+      alert.present();
     }
 
 }
