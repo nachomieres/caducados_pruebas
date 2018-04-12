@@ -16,7 +16,6 @@ export class BuscadorProvider {
   base =  firebase.database().ref ('caducados');
   eroski: string = 'https://www.compraonline.grupoeroski.com/es/search/results/?q=';
   fecha: string = '';
-  array = [];
 
   constructor(public http: Http, public alertCtrl: AlertController) {
     console.log('Hello BuscadorProvider Provider');
@@ -26,7 +25,7 @@ export class BuscadorProvider {
   buscaeEroski (codigo: string) {
     console.log (this.eroski + codigo);
     return this.http.get (this.eroski + codigo).map (res => {
-      //let array= [];
+      let array= [];
       //return res.text () ;
       let articulo;
       let parser = new DOMParser ();
@@ -36,17 +35,16 @@ export class BuscadorProvider {
       console.log (nombre);
       let imagen = parser.parseFromString (producto[0].innerHTML, "text/html").getElementsByTagName ('img');
       console.log (imagen[0].attributes[2].textContent);
-      this.array.push ({
+      array.push ({
         nombre: nombre[0].innerText,
         imagen: imagen[0].attributes[2].textContent
       });
-      return this.array;
+      return array;
     }); 
     }
 
     buscaCarrefour (codigo: string) {
       let carrefour: string = 'https://www.carrefour.es/global/?Ntt=' + codigo + '&search=Buscar';
-      this.presentPrompt ();
       return this.http.get (carrefour).map (res => {
         let array= [];
         //return res.text () ;
@@ -60,18 +58,14 @@ export class BuscadorProvider {
           imagen: imagen[0].attributes['src'].textContent,
           precio: precio[0].textContent 
         });
-        let fechaCaducidad = this.fecha.split ('-');
-        console.log (fechaCaducidad);
-        firebase.database ().ref ('caducados/' + this.fecha).push ({
-          nombre: array[0].nombre,
-          precio: array[0].precio,
-          imagen: array[0].imagen
-        })
+        
+        this.presentPrompt (array);
         return array;
       }); 
     }
 
-    async presentPrompt() {
+    presentPrompt(datos: any) {
+      console.log (datos);
       let alert = this.alertCtrl.create({
         title: 'Fecha Caducidad:',
         inputs: [
@@ -92,8 +86,12 @@ export class BuscadorProvider {
           {
             text: 'Añadir',
             handler: data => {
-              this.fecha = data;
-              console.log (this.array);
+              console.log (data);
+              firebase.database ().ref ('caducados/' + this.fecha).push ({
+                nombre: datos[0].nombre,
+                precio: datos[0].precio,
+                imagen: datos[0].imagen
+              })
             }
           }
         ]
