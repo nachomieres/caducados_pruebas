@@ -70,7 +70,7 @@ export class BuscadorProvider {
         title: 'Fecha Caducidad:',
         inputs: [
           {
-            name: 'Fecha de caducidad:',
+            name: 'fecha',
             placeholder: 'fecha',
             type: 'date'
           }
@@ -86,8 +86,10 @@ export class BuscadorProvider {
           {
             text: 'Añadir',
             handler: data => {
-              console.log (data);
-              firebase.database ().ref ('caducados/' + this.fecha).push ({
+              console.log (data.fecha);
+              let fecha = data.fecha.split ('-');
+              console.log (fecha);
+              firebase.database ().ref ('caducados/' + fecha[0]+'/'+fecha[1]+'/'+fecha[2]).push ({
                 nombre: datos[0].nombre,
                 precio: datos[0].precio,
                 imagen: datos[0].imagen
